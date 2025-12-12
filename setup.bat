@@ -100,8 +100,11 @@ set "TOOL_TARGET="
 set "TOOL_INSTRUCTIONS_FILE="
 set "parse_done="
 
-echo DEBUG: Starting parse loop 1>&2
-for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_parse "%%a" "%search_tool_id%"
+echo DEBUG: Starting parse loop, CONFIG_FILE=%CONFIG_FILE% 1>&2
+for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
+    echo DEBUG: Loop iteration, calling process_line_parse with line=[%%a] 1>&2
+    call :process_line_parse "%%a" "%search_tool_id%"
+)
 echo DEBUG: Parse loop completed 1>&2
 if "%parse_done%"=="true" goto :done_parse
 
