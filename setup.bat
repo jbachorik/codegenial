@@ -89,7 +89,7 @@ if "%in_tool%"=="true" if not "%tool_id%"=="" (
 exit /b 0
 
 :parse_tool_config
-echo DEBUG: parse_tool_config called with tool_id=[%~1] 1>&2
+setlocal enabledelayedexpansion
 set "search_tool_id=%~1"
 set "in_tool=false"
 set "found=false"
@@ -98,25 +98,62 @@ set "TOOL_DESC="
 set "TOOL_SOURCE="
 set "TOOL_TARGET="
 set "TOOL_INSTRUCTIONS_FILE="
-set "parse_done="
 
-echo DEBUG: Starting parse loop, CONFIG_FILE=%CONFIG_FILE% 1>&2
 for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
-    echo DEBUG: Loop iteration, calling process_line_parse with line=[%%a] 1>&2
-    call :process_line_parse %%a "%search_tool_id%"
+    set "line=%%a"
+
+    REM Skip comments
+    echo !line! | findstr /r "^[ 	]*#" >nul
+    if not errorlevel 1 goto :continue_parse
+
+    REM Check for section header
+    echo !line! | findstr /r "^\[.*\]$" >nul
+    if not errorlevel 1 (
+        if "!in_tool!"=="true" goto :done_parse
+
+        set "current_id=!line:~1,-1!"
+        if "!current_id!"=="%search_tool_id%" (
+            set "in_tool=true"
+            set "found=true"
+        )
+        goto :continue_parse
+    )
+
+    REM Parse key=value pairs
+    if "!in_tool!"=="true" (
+        echo !line! | findstr /r "=" >nul
+        if not errorlevel 1 (
+            for /f "tokens=1,* delims==" %%b in ("!line!") do (
+                set "key=%%b"
+                set "value=%%c"
+                REM Trim whitespace
+                for /f "tokens=* delims= " %%d in ("!key!") do set "key=%%d"
+                for /f "tokens=* delims= " %%e in ("!value!") do set "value=%%e"
+
+                if "!key!"=="name" set "TOOL_NAME=!value!"
+                if "!key!"=="description" set "TOOL_DESC=!value!"
+                if "!key!"=="source" set "TOOL_SOURCE=!value!"
+                if "!key!"=="target" set "TOOL_TARGET=!value!"
+                if "!key!"=="instructions_file" set "TOOL_INSTRUCTIONS_FILE=!value!"
+            )
+        )
+    )
+
+    :continue_parse
 )
-echo DEBUG: Parse loop completed 1>&2
-if "%parse_done%"=="true" goto :done_parse
 
 :done_parse
-echo DEBUG: parse_done=%parse_done% found=%found% TOOL_SOURCE=%TOOL_SOURCE% 1>&2
-if "%found%"=="false" (
+if "!found!"=="false" (
+    endlocal
     call :print_error "Error: Tool '%search_tool_id%' not found in configuration"
     echo.
     echo Available tools:
     call :list_tools
     exit /b 1
 )
+
+:: Export variables and exit setlocal scope
+endlocal & set "TOOL_NAME=%TOOL_NAME%" & set "TOOL_DESC=%TOOL_DESC%" & set "TOOL_SOURCE=%TOOL_SOURCE%" & set "TOOL_TARGET=%TOOL_TARGET%" & set "TOOL_INSTRUCTIONS_FILE=%TOOL_INSTRUCTIONS_FILE%"
 
 :: Validate required fields
 if "%TOOL_SOURCE%"=="" (
