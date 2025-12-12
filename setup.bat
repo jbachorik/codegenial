@@ -284,17 +284,19 @@ if not errorlevel 1 (
 if "%in_tool%"=="true" (
     echo %line% | findstr /r "=" >nul
     if not errorlevel 1 (
-        for /f "tokens=1,* delims==" %%b in ("%line%") do (
-            call :trim key "%%b"
-            call :trim value "%%c"
-        )
-        if "%key%"=="name" set "TOOL_NAME=%value%"
-        if "%key%"=="description" set "TOOL_DESC=%value%"
-        if "%key%"=="source" set "TOOL_SOURCE=%value%"
-        if "%key%"=="target" set "TOOL_TARGET=%value%"
-        if "%key%"=="instructions_file" set "TOOL_INSTRUCTIONS_FILE=%value%"
+        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_parse "%%b" "%%c"
     )
 )
+exit /b 0
+
+:set_tool_prop_parse
+call :trim key "%~1"
+call :trim value "%~2"
+if "%key%"=="name" set "TOOL_NAME=%value%"
+if "%key%"=="description" set "TOOL_DESC=%value%"
+if "%key%"=="source" set "TOOL_SOURCE=%value%"
+if "%key%"=="target" set "TOOL_TARGET=%value%"
+if "%key%"=="instructions_file" set "TOOL_INSTRUCTIONS_FILE=%value%"
 exit /b 0
 
 :process_line_list
@@ -327,14 +329,16 @@ if not errorlevel 1 (
 if "%in_tool%"=="true" (
     echo %line% | findstr /r "=" >nul
     if not errorlevel 1 (
-        for /f "tokens=1,* delims==" %%b in ("%line%") do (
-            call :trim key "%%b"
-            call :trim value "%%c"
-        )
-        if "%key%"=="name" set "tool_name=%value%"
-        if "%key%"=="description" set "tool_desc=%value%"
+        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_list "%%b" "%%c"
     )
 )
+exit /b 0
+
+:set_tool_prop_list
+call :trim key "%~1"
+call :trim value "%~2"
+if "%key%"=="name" set "tool_name=%value%"
+if "%key%"=="description" set "tool_desc=%value%"
 exit /b 0
 
 :trim
