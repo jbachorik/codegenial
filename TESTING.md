@@ -5,7 +5,7 @@ This document describes the testing strategy and tools for the Codegenial projec
 ## Requirements
 
 ### Unix/Linux/macOS
-- **Bash** 4.0 or higher
+- **Bash** 3.2 or higher (compatible with macOS default bash)
 - Standard Unix utilities: `sed`, `grep`, `find`, `chmod`
 - `bash` must be in PATH
 
@@ -125,7 +125,7 @@ GitHub Actions automatically runs tests on:
 
 1. **Smoke Tests (Unix)** (Ubuntu + macOS)
    - Runs the full test suite on both platforms
-   - Requires: Bash 4.0+, standard Unix utilities
+   - Requires: Bash 3.2+, standard Unix utilities
    - Ensures cross-platform Unix compatibility
    - Verifies setup commands work
    - Validates all shell script syntax
