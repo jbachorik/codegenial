@@ -1,4 +1,4 @@
-﻿#Requires -Version 3.0
+#Requires -Version 3.0
 
 param(
     [Parameter(Position=0)]
@@ -262,7 +262,7 @@ if ($tool.instructions_file) {
 }
 
 Write-Host ""
-Write-Host "✓ Installation complete!" -ForegroundColor Green
+Write-Host "Installation complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host ('Files installed to: {0}' -f $targetPath)
 
@@ -271,4 +271,6 @@ if ($ToolId -eq "claude") {
     Write-Host ""
     Write-Host "Next steps:"
     Write-Host ('  1. Navigate to your project: cd {0}' -f $TargetDirectory)
-    Write-Host '  2. Run builds with log analysis: .\.claude
+    Write-Host '  2. Run builds with log analysis: .\.claude\commands\build-and-summarize'
+    Write-Host '  3. View available agents: dir .claude\agents\'
+}
