@@ -93,15 +93,9 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
     :: Check for section header [tool-id]
     echo !line! | findstr /r "^\[.*\]$" >nul
     if not errorlevel 1 (
-        echo DEBUG: Found tool section: !line! 1>&2
         :: Print previous tool if exists
         if "!in_tool!"=="true" if not "!tool_id!"=="" (
-            echo DEBUG: Printing tool: !tool_id! 1>&2
             call :print_tool "!tool_id!" "!tool_name!" "!tool_desc!"
-            if errorlevel 1 (
-                echo DEBUG: print_tool failed with errorlevel %errorlevel% 1>&2
-                exit /b 255
-            )
         )
 
         :: Extract tool ID from [brackets]
@@ -121,18 +115,8 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
                 set "value=%%c"
 
                 :: Trim whitespace - call technique to avoid for /f issues
-                echo DEBUG: Before trim - key=[!key!] value=[!value!] 1>&2
                 call :trim key "!key!"
-                if errorlevel 1 (
-                    echo DEBUG: trim key failed 1>&2
-                    exit /b 255
-                )
                 call :trim value "!value!"
-                if errorlevel 1 (
-                    echo DEBUG: trim value failed 1>&2
-                    exit /b 255
-                )
-                echo DEBUG: After trim - key=[!key!] value=[!value!] 1>&2
 
                 if "!key!"=="name" set "tool_name=!value!"
                 if "!key!"=="description" set "tool_desc=!value!"
@@ -144,16 +128,9 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
 )
 
 :: Print last tool
-echo DEBUG: After loop - printing last tool 1>&2
 if "!in_tool!"=="true" if not "!tool_id!"=="" (
-    echo DEBUG: Last tool: !tool_id! 1>&2
     call :print_tool "!tool_id!" "!tool_name!" "!tool_desc!"
-    if errorlevel 1 (
-        echo DEBUG: print_tool failed for last tool 1>&2
-        exit /b 255
-    )
 )
-echo DEBUG: list_tools exiting normally 1>&2
 exit /b 0
 
 :parse_tool_config
@@ -346,9 +323,7 @@ if /i "%tool_id%"=="claude" (
 exit /b 0
 
 :print_tool
-echo DEBUG: print_tool called with args: [%~1] [%~2] [%~3] 1>&2
 echo [94m  %~1[0m %~2 - %~3
-echo DEBUG: print_tool exiting 1>&2
 exit /b 0
 
 :print_error
@@ -370,7 +345,5 @@ exit /b 0
 :trim
 :: Trim leading and trailing whitespace from a variable
 :: Usage: call :trim varname "value"
-echo DEBUG: trim called with varname=[%~1] value=[%~2] 1>&2
 set "%~1=%~2"
-echo DEBUG: trim exiting 1>&2
 exit /b 0
