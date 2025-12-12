@@ -1,0 +1,122 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+mkdir -p build/logs build/reports/claude .claude/out
+STAMP="$(date +%Y%m%d-%H%M%S)"
+
+# Detect build tool
+if [ -f "./gradlew" ]; then
+  BUILD_TOOL="gradle"
+  BUILD_CMD="./gradlew"
+  DEFAULT_GOAL="build"
+elif [ -f "./mvnw" ]; then
+  BUILD_TOOL="maven"
+  BUILD_CMD="./mvnw"
+  DEFAULT_GOAL="verify"
+elif [ -f "pom.xml" ]; then
+  BUILD_TOOL="maven"
+  BUILD_CMD="mvn"
+  DEFAULT_GOAL="verify"
+else
+  echo "Error: Could not detect Gradle (gradlew) or Maven (mvnw/pom.xml) in current directory"
+  exit 1
+fi
+
+# Args (default to build tool's default goal)
+ARGS=("$@")
+if [ "${#ARGS[@]}" -eq 0 ]; then
+  ARGS=("$DEFAULT_GOAL")
+fi
+
+# Label for the log file from the first arg
+LABEL="$(printf '%s' "${ARGS[0]}" | tr '/:' '__')"
+LOG="build/logs/${STAMP}-${LABEL}.log"
+
+# Ensure we clean the tail on exit
+tail_pid=""
+cleanup() { [ -n "${tail_pid:-}" ] && kill "$tail_pid" 2>/dev/null || true; }
+trap cleanup EXIT INT TERM
+
+# Build tool specific flags
+if [ "$BUILD_TOOL" = "gradle" ]; then
+  TOOL_FLAGS=("-i" "--console=plain")
+else
+  TOOL_FLAGS=("-e")
+fi
+
+echo "▶ Detected build tool: $BUILD_TOOL"
+echo "▶ Logging full output to: $LOG"
+echo "▶ Running: $BUILD_CMD ${ARGS[*]} ${TOOL_FLAGS[*]}"
+echo "   (Console output here is minimized; the full log is in the file.)"
+echo
+
+# Start build fully redirected to the log (no stdout/stderr to this session)
+# Use stdbuf to make the output line-buffered in the log for timely tailing.
+( stdbuf -oL -eL "$BUILD_CMD" "${ARGS[@]}" "${TOOL_FLAGS[@]}" ) >"$LOG" 2>&1 &
+build_pid=$!
+
+# Minimal live progress: follow the log and print only interesting lines
+if [ "$BUILD_TOOL" = "gradle" ]; then
+  # Gradle patterns
+  tail -n0 -F "$LOG" | awk '
+    /^> Task / { print; fflush(); next }
+    /^BUILD (SUCCESSFUL|FAILED)/ { print; fflush(); next }
+    /[0-9]+ tests? (successful|failed|skipped)/ { print; fflush(); next }
+  ' &
+else
+  # Maven patterns
+  tail -n0 -F "$LOG" | awk '
+    /^\[INFO\] Building / { print; fflush(); next }
+    /^\[INFO\] BUILD (SUCCESS|FAILURE)/ { print; fflush(); next }
+    /^Tests run:/ { print; fflush(); next }
+    /^\[INFO\] -+ Reactor Summary / { print; fflush(); next }
+  ' &
+fi
+tail_pid=$!
+
+# Wait for build to finish
+wait "$build_pid"
+status=$?
+
+# Stop the tail and print a compact summary from the log
+kill "$tail_pid" 2>/dev/null || true
+tail_pid=""
+
+echo
+echo "=== Summary ==="
+# Grab the last BUILD line and test summary lines
+if [ "$BUILD_TOOL" = "gradle" ]; then
+  awk '
+    /^BUILD (SUCCESSFUL|FAILED)/ { lastbuild=$0 }
+    /[0-9]+ tests? (successful|failed|skipped)/ { tests=$0 }
+    END {
+      if (lastbuild) print lastbuild;
+      if (tests) print tests;
+    }
+  ' "$LOG" || true
+else
+  awk '
+    /^\[INFO\] BUILD (SUCCESS|FAILURE)/ { lastbuild=$0 }
+    /^Tests run:/ { if (!tests) tests=$0 }
+    /^Total time:/ { time=$0 }
+    END {
+      if (lastbuild) print lastbuild;
+      if (tests) print tests;
+      if (time) print time;
+    }
+  ' "$LOG" || true
+fi
+
+echo
+if [ $status -eq 0 ]; then
+  echo "✔ Build completed. Full log at: $LOG"
+else
+  echo "✖ Build failed with status $status. Full log at: $LOG"
+fi
+
+# Hand over to your logs analyst agent — keep the main session output tiny.
+echo
+echo "Delegating to build-logs-analyst agent…"
+# If your CLI supports non-streaming, set it here to avoid verbose output.
+# Example (uncomment if supported): export CLAUDE_NO_STREAM=1
+claude "Act as the build-logs-analyst agent to parse the build log at: $LOG. Generate the required summary artifacts as specified in the build-logs-analyst agent definition."

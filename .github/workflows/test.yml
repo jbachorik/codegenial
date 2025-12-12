@@ -1,0 +1,86 @@
+name: Tests
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  smoke-tests-unix:
+    name: Smoke Tests (Unix)
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Make scripts executable
+        run: |
+          chmod +x setup
+          chmod +x test-setup.sh
+          chmod +x claude/commands/build-and-summarize
+
+      - name: Run smoke tests
+        run: ./test-setup.sh
+
+      - name: Verify setup list command
+        run: ./setup list
+
+      - name: Check shell script syntax
+        run: |
+          bash -n setup
+          bash -n claude/commands/build-and-summarize
+          bash -n test-setup.sh
+
+  smoke-tests-windows:
+    name: Smoke Tests (Windows)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Windows smoke tests
+        shell: cmd
+        run: test-setup.bat
+
+      - name: Verify setup.bat list command
+        shell: cmd
+        run: setup.bat list
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run ShellCheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: '.'
+          ignore_paths: '.git .github/workflows test-install'
+          ignore_names: 'setup.bat'
+        continue-on-error: true
+
+  markdown-lint:
+    name: Markdown Lint
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Lint Markdown files
+        uses: avto-dev/markdown-lint@v1
+        with:
+          args: '*.md claude/**/*.md'
+          ignore: 'node_modules'
+        continue-on-error: true

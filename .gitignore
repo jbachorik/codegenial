@@ -1,0 +1,24 @@
+# IDE and editor files
+/.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude Code local settings
+/.claude/settings.local.json
+
+# Build output and logs
+/build/
+/target/
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+
+# Local test directories
+/test-install/
