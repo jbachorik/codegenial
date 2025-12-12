@@ -123,6 +123,9 @@ if (Test-Path $TestDir) {
 }
 New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
 
+# Create required CLAUDE.md file (the claude tool requires this)
+"# Test Instructions" | Out-File -FilePath (Join-Path $TestDir "CLAUDE.md")
+
 # Run installation with -Force to skip prompts
 try {
     $output = & (Join-Path $ScriptDir "setup.ps1") claude "$TestDir" -Force 2>&1
