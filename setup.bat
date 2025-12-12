@@ -74,6 +74,7 @@ if not exist "%CONFIG_FILE%" (
 )
 
 echo DEBUG: Config file exists 1>&2
+setlocal disabledelayedexpansion
 set "in_tool=false"
 set "tool_id="
 set "tool_name="
@@ -83,13 +84,15 @@ echo DEBUG: Starting to read config file 1>&2
 for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_list "%%a"
 
 :: Print last tool
-if "!in_tool!"=="true" if not "!tool_id!"=="" (
-    call :print_tool "!tool_id!" "!tool_name!" "!tool_desc!"
+if "%in_tool%"=="true" if not "%tool_id%"=="" (
+    call :print_tool "%tool_id%" "%tool_name%" "%tool_desc%"
 )
+endlocal
 exit /b 0
 
 :parse_tool_config
 echo DEBUG: parse_tool_config called with tool_id=[%~1] 1>&2
+setlocal disabledelayedexpansion
 set "search_tool_id=%~1"
 set "in_tool=false"
 set "found=false"
@@ -102,6 +105,7 @@ set "TOOL_INSTRUCTIONS_FILE="
 echo DEBUG: Starting parse loop 1>&2
 for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_parse "%%a" "%search_tool_id%"
 echo DEBUG: Parse loop completed 1>&2
+endlocal & set "found=%found%" & set "TOOL_NAME=%TOOL_NAME%" & set "TOOL_DESC=%TOOL_DESC%" & set "TOOL_SOURCE=%TOOL_SOURCE%" & set "TOOL_TARGET=%TOOL_TARGET%" & set "TOOL_INSTRUCTIONS_FILE=%TOOL_INSTRUCTIONS_FILE%" & set "parse_done=%parse_done%"
 if "%parse_done%"=="true" goto :done_parse
 
 :done_parse
