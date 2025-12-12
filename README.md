@@ -1,6 +1,6 @@
 # Codegenial
 
-[![Tests](https://github.com/YOUR_USERNAME/codegenial/workflows/Tests/badge.svg)](https://github.com/YOUR_USERNAME/codegenial/actions)
+[![Tests](https://github.com/jbachorik/codegenial/workflows/Tests/badge.svg)](https://github.com/jbachorik/codegenial/actions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 A collection of reusable AI code assistant tools and agents designed to enhance development workflows.
