@@ -310,16 +310,7 @@ if /i "%tool_id%"=="claude" (
 exit /b 0
 
 :print_tool
-set "id=%~1            "
-call set "id=%%id:~0,12%%"
-echo [94m  %id%[0m %~2 - %~3
-set "id=%~1"
-set "name=%~2"
-set "desc=%~3"
-:: Pad id to 12 characters
-set "padded_id=!id!            "
-set "padded_id=!padded_id:~0,12!"
-echo [94m  !padded_id![0m !name! - !desc!
+echo [94m  %~1[0m %~2 - %~3
 exit /b 0
 
 :print_error
