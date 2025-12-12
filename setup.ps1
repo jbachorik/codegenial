@@ -3,9 +3,11 @@
 param(
     [Parameter(Position=0)]
     [string]$ToolId,
-    
+
     [Parameter(Position=1)]
-    [string]$TargetDirectory
+    [string]$TargetDirectory,
+
+    [switch]$Force
 )
 
 $ErrorActionPreference = "Stop"
@@ -204,10 +206,12 @@ if ($tool.instructions_file) {
 # Check if target already exists
 if (Test-Path $targetPath) {
     Write-Host ('Warning: Target directory already exists: {0}' -f $targetPath) -ForegroundColor Yellow
-    $response = Read-Host "Overwrite? (y/N)"
-    if ($response -ne "y" -and $response -ne "Y") {
-        Write-Host "Installation cancelled."
-        exit 0
+    if (-not $Force) {
+        $response = Read-Host "Overwrite? (y/N)"
+        if ($response -ne "y" -and $response -ne "Y") {
+            Write-Host "Installation cancelled."
+            exit 0
+        }
     }
     Write-Host "Removing existing directory..." -ForegroundColor Yellow
     Remove-Item -Path $targetPath -Recurse -Force
