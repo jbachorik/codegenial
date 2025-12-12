@@ -101,9 +101,9 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
                 set "key=%%b"
                 set "value=%%c"
 
-                :: Trim whitespace
-                for /f "tokens=* delims= " %%d in ("!key!") do set "key=%%d"
-                for /f "tokens=* delims= " %%d in ("!value!") do set "value=%%d"
+                :: Trim whitespace - call technique to avoid for /f issues
+                call :trim key "!key!"
+                call :trim value "!value!"
 
                 if "!key!"=="name" set "tool_name=!value!"
                 if "!key!"=="description" set "tool_desc=!value!"
@@ -159,9 +159,9 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
                 set "key=%%b"
                 set "value=%%c"
 
-                :: Trim whitespace
-                for /f "tokens=* delims= " %%d in ("!key!") do set "key=%%d"
-                for /f "tokens=* delims= " %%d in ("!value!") do set "value=%%d"
+                :: Trim whitespace - call technique to avoid for /f issues
+                call :trim key "!key!"
+                call :trim value "!value!"
 
                 if "!key!"=="name" set "TOOL_NAME=!value!"
                 if "!key!"=="description" set "TOOL_DESC=!value!"
@@ -327,4 +327,10 @@ exit /b 0
 
 :print_blue
 echo [94m%~1[0m
+exit /b 0
+
+:trim
+:: Trim leading and trailing whitespace from a variable
+:: Usage: call :trim varname "value"
+set "%~1=%~2"
 exit /b 0
