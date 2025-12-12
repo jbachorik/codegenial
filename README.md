@@ -27,8 +27,8 @@ A collection of reusable AI code assistant tools and agents designed to enhance 
    # Linux/macOS
    ./setup list
 
-   # Windows
-   setup.bat list
+   # Windows (PowerShell)
+   .\setup.ps1 list
    ```
 
 3. Install a tool to your project:
@@ -36,9 +36,11 @@ A collection of reusable AI code assistant tools and agents designed to enhance 
    # Linux/macOS
    ./setup claude /path/to/your/project
 
-   # Windows
-   setup.bat claude C:\path\to\your\project
+   # Windows (PowerShell)
+   .\setup.ps1 claude C:\path\to\your\project
    ```
+
+   **Windows Requirements**: PowerShell 3.0 or later (available on Windows 7+ with updates, built-in on Windows 8+)
 
 ### Usage
 
@@ -134,7 +136,11 @@ See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation and developme
 Run the automated smoke tests to verify the setup script works correctly:
 
 ```bash
+# Linux/macOS
 ./test-setup.sh
+
+# Windows (PowerShell)
+.\test-setup.ps1
 ```
 
 This will test installation, error handling, and basic functionality without modifying your system (uses a temporary directory).

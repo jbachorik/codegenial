@@ -15,8 +15,9 @@ bash --version
 ```
 
 ### Windows
-- Windows 7 or higher
-- Command Prompt (cmd.exe)
+- Windows 7 or higher with PowerShell 3.0+
+  - PowerShell 3.0+ comes built-in with Windows 8+
+  - Windows 7 users need to install Windows Management Framework 3.0+
 - ANSI color support (Windows 10+) - optional but recommended
 
 ## Quick Start
@@ -26,8 +27,8 @@ Run all tests:
 # Unix/Linux/macOS
 ./test-setup.sh
 
-# Windows
-test-setup.bat
+# Windows (PowerShell)
+.\test-setup.ps1
 ```
 
 ## Test Suite
@@ -57,25 +58,25 @@ Comprehensive automated tests that verify core functionality without modifying y
 - Detailed failure reporting
 - Exit code 0 on success, 1 on any failure
 
-### Windows Smoke Tests (`test-setup.bat`)
+### Windows Smoke Tests (`test-setup.ps1`)
 
-Windows-specific automated tests for the setup.bat script.
+Windows-specific automated tests for the setup.ps1 PowerShell script.
 
 **8 Tests:**
 
-1. **Setup.bat exists** - Verifies the Windows setup script is present
+1. **Setup.ps1 exists** - Verifies the Windows PowerShell setup script is present
 2. **tools.conf exists** - Ensures configuration file is present
 3. **Source directory for claude tool exists** - Checks source files are present
-4. **setup.bat list command works** - Tests tool listing functionality
+4. **setup.ps1 list command works** - Tests tool listing functionality
 5. **Invalid tool name fails gracefully** - Tests error handling
 6. **Missing target directory fails gracefully** - Tests path validation
 7. **Actual installation to temporary directory** - Full end-to-end installation test
 8. **Overwrite prompt works** - Tests interactive overwrite protection
 
 **Features:**
+- Requires PowerShell 3.0+
 - Uses temporary directory (`test-install\`) - no system modifications
 - ANSI colored output where supported
-- Tests batch script functionality
 - Exit code 0 on success, 1 on any failure
 
 ### Running Tests Locally
@@ -84,8 +85,8 @@ Windows-specific automated tests for the setup.bat script.
 # Unix/Linux/macOS
 ./test-setup.sh
 
-# Windows
-test-setup.bat
+# Windows (PowerShell)
+.\test-setup.ps1
 
 # Manual syntax checks (Unix only)
 bash -n setup
@@ -94,10 +95,10 @@ bash -n test-setup.sh
 
 # Test individual commands
 ./setup list          # Unix
-setup.bat list        # Windows
+.\setup.ps1 list      # Windows (PowerShell)
 
 ./setup --help        # Unix
-setup.bat --help      # Windows
+.\setup.ps1 --help    # Windows (PowerShell)
 ```
 
 ### ShellCheck (Optional)
@@ -132,8 +133,8 @@ GitHub Actions automatically runs tests on:
 
 2. **Smoke Tests (Windows)** (Windows Latest)
    - Runs Windows-specific test suite
-   - Requires: Windows 7+, cmd.exe
-   - Tests setup.bat functionality
+   - Requires: PowerShell 3.0+ (built-in on Windows 8+)
+   - Tests setup.ps1 functionality
    - Verifies installation on Windows
 
 3. **ShellCheck** (Ubuntu)
@@ -242,19 +243,25 @@ rm -rf /tmp/test-project
 
 #### Windows
 
-1. **Ensure you're in the project root:**
-   ```cmd
+1. **Check PowerShell version:**
+   ```powershell
+   $PSVersionTable.PSVersion
+   # Should be 3.0 or higher
+   ```
+
+2. **Ensure you're in the project root:**
+   ```powershell
    dir tools.conf
    ```
 
-2. **Check setup.bat exists:**
-   ```cmd
-   dir setup.bat test-setup.bat
+3. **Check setup.ps1 exists:**
+   ```powershell
+   dir setup.ps1, test-setup.ps1
    ```
 
-3. **Run with error output:**
-   ```cmd
-   test-setup.bat 2>&1 | more
+4. **Run with error output:**
+   ```powershell
+   .\test-setup.ps1
    ```
 
 ### CI Tests Fail on GitHub
@@ -269,6 +276,6 @@ rm -rf /tmp/test-project
 **Tested Platforms:**
 - Ubuntu (latest) - Full CI testing
 - macOS (latest) - Full CI testing
-- Windows - Setup script only (via Git Bash/WSL)
+- Windows (latest) - PowerShell setup script with full CI testing
 
 **Note:** The `build-and-summarize` command requires a bash environment on Windows (WSL, Git Bash, or Cygwin).

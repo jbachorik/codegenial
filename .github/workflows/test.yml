@@ -47,12 +47,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run Windows smoke tests
-        shell: cmd
-        run: test-setup.bat
+        shell: powershell
+        run: .\test-setup.ps1
 
-      - name: Verify setup.bat list command
-        shell: cmd
-        run: setup.bat list
+      - name: Verify setup.ps1 list command
+        shell: powershell
+        run: .\setup.ps1 list
 
   shellcheck:
     name: ShellCheck
@@ -67,7 +67,6 @@ jobs:
         with:
           scandir: '.'
           ignore_paths: '.git .github/workflows test-install'
-          ignore_names: 'setup.bat'
         continue-on-error: true
 
   markdown-lint:
