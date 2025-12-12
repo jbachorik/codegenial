@@ -59,7 +59,8 @@ function Parse-ConfigFile {
 
 function List-Tools {
     if (-not (Test-Path $ConfigFile)) {
-        Write-Error ("Configuration file not found: " + $ConfigFile)
+        Write-Host "Error: Configuration file not found: " -NoNewline -ForegroundColor Red
+        Write-Host $ConfigFile -ForegroundColor Red
         return
     }
     
@@ -151,7 +152,8 @@ if (-not $TargetDirectory) {
 
 # Resolve target directory
 if (-not (Test-Path $TargetDirectory)) {
-    Write-Error ("Error: Target directory does not exist: " + $TargetDirectory)
+    Write-Host "Error: Target directory does not exist: " -NoNewline -ForegroundColor Red
+    Write-Host $TargetDirectory -ForegroundColor Red
     exit 1
 }
 
@@ -187,7 +189,8 @@ $targetPath = Join-Path $TargetDirectory $tool.target
 
 # Validate source exists
 if (-not (Test-Path $sourcePath)) {
-    Write-Error ("Error: Source directory not found: " + $sourcePath)
+    Write-Host "Error: Source directory not found: " -NoNewline -ForegroundColor Red
+    Write-Host $sourcePath -ForegroundColor Red
     exit 1
 }
 
@@ -195,7 +198,8 @@ if (-not (Test-Path $sourcePath)) {
 if ($tool.instructions_file) {
     $instructionsPath = Join-Path $TargetDirectory $tool.instructions_file
     if (-not (Test-Path $instructionsPath)) {
-        Write-Error ("Error: Instructions file not found: " + $instructionsPath)
+        Write-Host "Error: Instructions file not found: " -NoNewline -ForegroundColor Red
+        Write-Host $instructionsPath -ForegroundColor Red
         Write-Host ("The tool requires '" + $tool.instructions_file + "' to exist in the target directory.")
         exit 1
     }
@@ -203,7 +207,8 @@ if ($tool.instructions_file) {
 
 # Check if target already exists
 if (Test-Path $targetPath) {
-    Write-Host ("Warning: Target directory already exists: " + $targetPath) -ForegroundColor Yellow
+    Write-Host "Warning: Target directory already exists: " -NoNewline -ForegroundColor Yellow
+    Write-Host $targetPath -ForegroundColor Yellow
     $response = Read-Host "Overwrite? (y/N)"
     if ($response -ne "y" -and $response -ne "Y") {
         Write-Host "Installation cancelled."
@@ -215,8 +220,10 @@ if (Test-Path $targetPath) {
 
 # Copy files (excluding files starting with '_')
 Write-Host "Copying files..." -ForegroundColor Blue
-Write-Host ("  From: " + $sourcePath)
-Write-Host ("  To:   " + $targetPath)
+Write-Host "  From: " -NoNewline
+Write-Host $sourcePath
+Write-Host "  To:   " -NoNewline
+Write-Host $targetPath
 
 # Create target directory
 New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
@@ -264,13 +271,15 @@ if ($tool.instructions_file) {
 Write-Host ""
 Write-Host "✓ Installation complete!" -ForegroundColor Green
 Write-Host ""
-Write-Host ("Files installed to: " + $targetPath)
+Write-Host "Files installed to: " -NoNewline
+Write-Host $targetPath
 
 # Show next steps based on tool
 if ($ToolId -eq "claude") {
     Write-Host ""
     Write-Host "Next steps:"
-    Write-Host ("  1. Navigate to your project: cd " + $TargetDirectory)
+    Write-Host "  1. Navigate to your project: cd " -NoNewline
+    Write-Host $TargetDirectory
     Write-Host '  2. Run builds with log analysis: .\.claude\commands\build-and-summarize'
     Write-Host '  3. View available agents: dir .claude\agents\'
 }
