@@ -82,7 +82,9 @@ echo.
 echo %BLUE%TEST:%NC% Invalid tool name fails gracefully
 if exist "%TEST_DIR%" rd /s /q "%TEST_DIR%" 2>nul
 mkdir "%TEST_DIR%"
-call "%SCRIPT_DIR%\setup.bat" nonexistent "%TEST_DIR%" >nul 2>&1
+echo === DEBUG OUTPUT START (invalid tool test) ===
+call "%SCRIPT_DIR%\setup.bat" nonexistent "%TEST_DIR%" >nul
+echo === DEBUG OUTPUT END ===
 if errorlevel 1 (
     echo %GREEN%/ PASS%NC%
     set /a PASSED+=1
@@ -112,7 +114,9 @@ if exist "%TEST_DIR%" rd /s /q "%TEST_DIR%" 2>nul
 mkdir "%TEST_DIR%"
 
 :: Run installation (automatically answer 'y' if prompted)
-echo y| call "%SCRIPT_DIR%\setup.bat" claude "%TEST_DIR%" >nul 2>&1
+echo === DEBUG OUTPUT START (installation test) ===
+echo y| call "%SCRIPT_DIR%\setup.bat" claude "%TEST_DIR%" >nul
+echo === DEBUG OUTPUT END ===
 
 :: Check if installation succeeded
 if not exist "%TEST_DIR%\.claude" (
