@@ -265,15 +265,24 @@ exit /b 0
 
 :process_line_parse
 :: Process one line from config file for parse_tool_config
+echo DEBUG: process_line_parse called with args: [%~1] [%~2] 1>&2
 set "line=%~1"
 set "search_id=%~2"
+echo DEBUG: Set variables, line=[%line%] search_id=[%search_id%] 1>&2
 
 :: Skip comments
+echo DEBUG: Checking if comment 1>&2
 echo %line% | findstr /r "^[ 	]*#" >nul
-if not errorlevel 1 exit /b 0
+echo DEBUG: Comment check errorlevel=%errorlevel% 1>&2
+if not errorlevel 1 (
+    echo DEBUG: It is a comment, exiting 1>&2
+    exit /b 0
+)
 
 :: Check for section header [tool-id]
+echo DEBUG: Checking if section header 1>&2
 echo %line% | findstr /r "^\[.*\]$" >nul
+echo DEBUG: Section header check errorlevel=%errorlevel% 1>&2
 if not errorlevel 1 (
     if "%in_tool%"=="true" (
         echo DEBUG: Setting parse_done=true 1>&2
