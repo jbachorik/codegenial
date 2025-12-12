@@ -74,7 +74,6 @@ if not exist "%CONFIG_FILE%" (
 )
 
 echo DEBUG: Config file exists 1>&2
-setlocal disabledelayedexpansion
 set "in_tool=false"
 set "tool_id="
 set "tool_name="
@@ -87,12 +86,10 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_list "%
 if "%in_tool%"=="true" if not "%tool_id%"=="" (
     call :print_tool "%tool_id%" "%tool_name%" "%tool_desc%"
 )
-endlocal
 exit /b 0
 
 :parse_tool_config
 echo DEBUG: parse_tool_config called with tool_id=[%~1] 1>&2
-setlocal disabledelayedexpansion
 set "search_tool_id=%~1"
 set "in_tool=false"
 set "found=false"
@@ -101,11 +98,11 @@ set "TOOL_DESC="
 set "TOOL_SOURCE="
 set "TOOL_TARGET="
 set "TOOL_INSTRUCTIONS_FILE="
+set "parse_done="
 
 echo DEBUG: Starting parse loop 1>&2
 for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_parse "%%a" "%search_tool_id%"
 echo DEBUG: Parse loop completed 1>&2
-endlocal & set "found=%found%" & set "TOOL_NAME=%TOOL_NAME%" & set "TOOL_DESC=%TOOL_DESC%" & set "TOOL_SOURCE=%TOOL_SOURCE%" & set "TOOL_TARGET=%TOOL_TARGET%" & set "TOOL_INSTRUCTIONS_FILE=%TOOL_INSTRUCTIONS_FILE%" & set "parse_done=%parse_done%"
 if "%parse_done%"=="true" goto :done_parse
 
 :done_parse
@@ -276,12 +273,15 @@ if not errorlevel 1 exit /b 0
 echo %line% | findstr /r "^\[.*\]$" >nul
 if not errorlevel 1 (
     if "%in_tool%"=="true" (
+        echo DEBUG: Setting parse_done=true 1>&2
         set "parse_done=true"
         exit /b 0
     )
     :: Extract tool ID from [brackets]
     set "current_id=%line:~1,-1%"
+    echo DEBUG: Checking tool section: current_id=[%current_id%] search_id=[%search_id%] 1>&2
     if "%current_id%"=="%search_id%" (
+        echo DEBUG: MATCH FOUND - setting found=true 1>&2
         set "in_tool=true"
         set "found=true"
     )
