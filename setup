@@ -224,12 +224,14 @@ install_tool() {
       echo -e "${YELLOW}Additional instructions already present, skipping...${NC}"
     else
       echo -e "${BLUE}Appending additional instructions...${NC}"
-      echo "" >> "$instructions_path"
-      echo "# Additional Tool Instructions" >> "$instructions_path"
-      echo "" >> "$instructions_path"
-      cat "$add_instructions" >> "$instructions_path"
-      echo "" >> "$instructions_path"
-      echo "$marker" >> "$instructions_path"
+      {
+        echo ""
+        echo "# Additional Tool Instructions"
+        echo ""
+        cat "$add_instructions"
+        echo ""
+        echo "$marker"
+      } >> "$instructions_path"
     fi
   fi
 
