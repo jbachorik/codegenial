@@ -272,5 +272,5 @@ if ($ToolId -eq "claude") {
     Write-Host "Next steps:"
     Write-Host "  1. Navigate to your project: cd $TargetDirectory"
     Write-Host "  2. Run builds with log analysis: .\.claude\commands\build-and-summarize"
-    Write-Host "  3. View available agents: dir .claude\agents\\"
+    Write-Host "  3. View available agents: dir .claude\agents"
 }
