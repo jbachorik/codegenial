@@ -80,52 +80,7 @@ set "tool_name="
 set "tool_desc="
 
 echo DEBUG: Starting to read config file 1>&2
-for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
-    set "line=%%a"
-
-    :: Skip empty lines
-    if "!line!"=="" goto :continue_list
-
-    :: Skip comments
-    echo !line! | findstr /r "^[ 	]*#" >nul
-    if not errorlevel 1 goto :continue_list
-
-    :: Check for section header [tool-id]
-    echo !line! | findstr /r "^\[.*\]$" >nul
-    if not errorlevel 1 (
-        :: Print previous tool if exists
-        if "!in_tool!"=="true" if not "!tool_id!"=="" (
-            call :print_tool "!tool_id!" "!tool_name!" "!tool_desc!"
-        )
-
-        :: Extract tool ID from [brackets]
-        set "tool_id=!line:~1,-1!"
-        set "in_tool=true"
-        set "tool_name="
-        set "tool_desc="
-        goto :continue_list
-    )
-
-    :: Parse key=value pairs
-    if "!in_tool!"=="true" (
-        echo !line! | findstr /r "=" >nul
-        if not errorlevel 1 (
-            for /f "tokens=1,* delims==" %%b in ("!line!") do (
-                set "key=%%b"
-                set "value=%%c"
-
-                :: Trim whitespace - call technique to avoid for /f issues
-                call :trim key "!key!"
-                call :trim value "!value!"
-
-                if "!key!"=="name" set "tool_name=!value!"
-                if "!key!"=="description" set "tool_desc=!value!"
-            )
-        )
-    )
-
-    :continue_list
-)
+for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_list "%%a"
 
 :: Print last tool
 if "!in_tool!"=="true" if not "!tool_id!"=="" (
@@ -143,50 +98,8 @@ set "TOOL_SOURCE="
 set "TOOL_TARGET="
 set "TOOL_INSTRUCTIONS_FILE="
 
-for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
-    set "line=%%a"
-
-    :: Skip comments
-    echo !line! | findstr /r "^[ 	]*#" >nul
-    if not errorlevel 1 goto :continue_parse
-
-    :: Check for section header [tool-id]
-    echo !line! | findstr /r "^\[.*\]$" >nul
-    if not errorlevel 1 (
-        if "!in_tool!"=="true" goto :done_parse
-
-        :: Extract tool ID from [brackets]
-        set "current_id=!line:~1,-1!"
-        if "!current_id!"=="%search_tool_id%" (
-            set "in_tool=true"
-            set "found=true"
-        )
-        goto :continue_parse
-    )
-
-    :: Parse key=value pairs
-    if "!in_tool!"=="true" (
-        echo !line! | findstr /r "=" >nul
-        if not errorlevel 1 (
-            for /f "tokens=1,* delims==" %%b in ("!line!") do (
-                set "key=%%b"
-                set "value=%%c"
-
-                :: Trim whitespace - call technique to avoid for /f issues
-                call :trim key "!key!"
-                call :trim value "!value!"
-
-                if "!key!"=="name" set "TOOL_NAME=!value!"
-                if "!key!"=="description" set "TOOL_DESC=!value!"
-                if "!key!"=="source" set "TOOL_SOURCE=!value!"
-                if "!key!"=="target" set "TOOL_TARGET=!value!"
-                if "!key!"=="instructions_file" set "TOOL_INSTRUCTIONS_FILE=!value!"
-            )
-        )
-    )
-
-    :continue_parse
-)
+for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_parse "%%a" "%search_tool_id%"
+if "%parse_done%"=="true" goto :done_parse
 
 :done_parse
 if "!found!"=="false" (
@@ -340,6 +253,88 @@ exit /b 0
 
 :print_blue
 echo [94m%~1[0m
+exit /b 0
+
+:process_line_parse
+:: Process one line from config file for parse_tool_config
+set "line=%~1"
+set "search_id=%~2"
+
+:: Skip comments
+echo %line% | findstr /r "^[ 	]*#" >nul
+if not errorlevel 1 exit /b 0
+
+:: Check for section header [tool-id]
+echo %line% | findstr /r "^\[.*\]$" >nul
+if not errorlevel 1 (
+    if "%in_tool%"=="true" (
+        set "parse_done=true"
+        exit /b 0
+    )
+    :: Extract tool ID from [brackets]
+    set "current_id=%line:~1,-1%"
+    if "%current_id%"=="%search_id%" (
+        set "in_tool=true"
+        set "found=true"
+    )
+    exit /b 0
+)
+
+:: Parse key=value pairs
+if "%in_tool%"=="true" (
+    echo %line% | findstr /r "=" >nul
+    if not errorlevel 1 (
+        for /f "tokens=1,* delims==" %%b in ("%line%") do (
+            call :trim key "%%b"
+            call :trim value "%%c"
+        )
+        if "%key%"=="name" set "TOOL_NAME=%value%"
+        if "%key%"=="description" set "TOOL_DESC=%value%"
+        if "%key%"=="source" set "TOOL_SOURCE=%value%"
+        if "%key%"=="target" set "TOOL_TARGET=%value%"
+        if "%key%"=="instructions_file" set "TOOL_INSTRUCTIONS_FILE=%value%"
+    )
+)
+exit /b 0
+
+:process_line_list
+:: Process one line from config file for list_tools
+set "line=%~1"
+
+:: Skip empty lines
+if "%line%"=="" exit /b 0
+
+:: Skip comments
+echo %line% | findstr /r "^[ 	]*#" >nul
+if not errorlevel 1 exit /b 0
+
+:: Check for section header [tool-id]
+echo %line% | findstr /r "^\[.*\]$" >nul
+if not errorlevel 1 (
+    :: Print previous tool if exists
+    if "%in_tool%"=="true" if not "%tool_id%"=="" (
+        call :print_tool "%tool_id%" "%tool_name%" "%tool_desc%"
+    )
+    :: Extract tool ID from [brackets]
+    set "tool_id=%line:~1,-1%"
+    set "in_tool=true"
+    set "tool_name="
+    set "tool_desc="
+    exit /b 0
+)
+
+:: Parse key=value pairs
+if "%in_tool%"=="true" (
+    echo %line% | findstr /r "=" >nul
+    if not errorlevel 1 (
+        for /f "tokens=1,* delims==" %%b in ("%line%") do (
+            call :trim key "%%b"
+            call :trim value "%%c"
+        )
+        if "%key%"=="name" set "tool_name=%value%"
+        if "%key%"=="description" set "tool_desc=%value%"
+    )
+)
 exit /b 0
 
 :trim
