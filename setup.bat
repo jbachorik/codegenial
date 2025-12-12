@@ -80,7 +80,7 @@ set "tool_name="
 set "tool_desc="
 
 echo DEBUG: Starting to read config file 1>&2
-for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_list "%%a"
+for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_list %%a
 
 :: Print last tool
 if "%in_tool%"=="true" if not "%tool_id%"=="" (
@@ -103,7 +103,7 @@ set "parse_done="
 echo DEBUG: Starting parse loop, CONFIG_FILE=%CONFIG_FILE% 1>&2
 for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do (
     echo DEBUG: Loop iteration, calling process_line_parse with line=[%%a] 1>&2
-    call :process_line_parse "%%a" "%search_tool_id%"
+    call :process_line_parse %%a "%search_tool_id%"
 )
 echo DEBUG: Parse loop completed 1>&2
 if "%parse_done%"=="true" goto :done_parse
@@ -304,7 +304,7 @@ if not errorlevel 1 (
 if "%in_tool%"=="true" (
     echo %line% | findstr /r "=" >nul
     if not errorlevel 1 (
-        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_parse "%%b" "%%c"
+        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_parse %%b %%c
     )
 )
 exit /b 0
@@ -349,7 +349,7 @@ if not errorlevel 1 (
 if "%in_tool%"=="true" (
     echo %line% | findstr /r "=" >nul
     if not errorlevel 1 (
-        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_list "%%b" "%%c"
+        for /f "tokens=1,* delims==" %%b in ("%line%") do call :set_tool_prop_list %%b %%c
     )
 )
 exit /b 0
