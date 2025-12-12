@@ -102,7 +102,8 @@ for /f "usebackq delims=" %%a in ("%CONFIG_FILE%") do call :process_line_parse "
 if "%parse_done%"=="true" goto :done_parse
 
 :done_parse
-if "!found!"=="false" (
+echo DEBUG: parse_done=%parse_done% found=%found% TOOL_SOURCE=%TOOL_SOURCE% 1>&2
+if "%found%"=="false" (
     call :print_error "Error: Tool '%search_tool_id%' not found in configuration"
     echo.
     echo Available tools:
@@ -111,12 +112,12 @@ if "!found!"=="false" (
 )
 
 :: Validate required fields
-if "!TOOL_SOURCE!"=="" (
+if "%TOOL_SOURCE%"=="" (
     call :print_error "Error: Invalid configuration for tool '%search_tool_id%'"
     echo Required fields: source, target
     exit /b 1
 )
-if "!TOOL_TARGET!"=="" (
+if "%TOOL_TARGET%"=="" (
     call :print_error "Error: Invalid configuration for tool '%search_tool_id%'"
     echo Required fields: source, target
     exit /b 1
