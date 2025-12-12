@@ -1,17 +1,22 @@
 @echo off
+echo DEBUG: Script started, arg1=[%~1] 1>&2
 setlocal enabledelayedexpansion
+echo DEBUG: Delayed expansion enabled 1>&2
 
 :: Get script directory
 set "SCRIPT_DIR=%~dp0"
 set "SCRIPT_DIR=%SCRIPT_DIR:~0,-1%"
 set "CONFIG_FILE=%SCRIPT_DIR%\tools.conf"
+echo DEBUG: SCRIPT_DIR=[%SCRIPT_DIR%] CONFIG_FILE=[%CONFIG_FILE%] 1>&2
 
 :: Parse command line arguments
 if "%~1"=="" goto :usage
 if /i "%~1"=="-h" goto :usage
 if /i "%~1"=="--help" goto :usage
 if /i "%~1"=="/?" goto :usage
+echo DEBUG: About to check if arg is 'list' 1>&2
 if /i "%~1"=="list" goto :list_tools_main
+echo DEBUG: Not list command, continuing 1>&2
 
 if "%~2"=="" (
     call :print_error "Error: Invalid number of arguments"
@@ -52,9 +57,13 @@ call :list_tools
 exit /b 1
 
 :list_tools_main
+echo DEBUG: Entered list_tools_main 1>&2
 echo Available tools:
+echo DEBUG: About to call list_tools 1>&2
 call :list_tools
-exit /b 0
+set "list_result=%errorlevel%"
+echo DEBUG: list_tools returned errorlevel %list_result% 1>&2
+exit /b %list_result%
 
 :list_tools
 echo DEBUG: Entering list_tools function 1>&2

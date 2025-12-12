@@ -66,9 +66,11 @@ echo.
 
 :: Test 4: Setup list command works
 echo %BLUE%TEST:%NC% setup.bat list command works
-call "%SCRIPT_DIR%\setup.bat" list >nul 2>&1
+echo === DEBUG OUTPUT START ===
+call "%SCRIPT_DIR%\setup.bat" list >nul
+echo === DEBUG OUTPUT END ===
 if errorlevel 1 (
-    echo %RED%X FAIL%NC%: list command failed
+    echo %RED%X FAIL%NC%: list command failed with errorlevel %errorlevel%
     set /a FAILED+=1
 ) else (
     echo %GREEN%/ PASS%NC%
