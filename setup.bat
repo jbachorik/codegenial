@@ -310,11 +310,9 @@ if /i "%tool_id%"=="claude" (
 exit /b 0
 
 :print_tool
-set "id=%~1"
-set "name=%~2"
-set "desc=%~3"
-call :print_blue "  %-12s" "!id!"
-echo  !name! - !desc!
+set "id=%~1            "
+call set "id=%%id:~0,12%%"
+echo [94m  %id%[0m %~2 - %~3
 exit /b 0
 
 :print_error
