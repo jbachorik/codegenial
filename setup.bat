@@ -313,8 +313,10 @@ exit /b 0
 set "id=%~1"
 set "name=%~2"
 set "desc=%~3"
-call :print_blue "  %-12s" "!id!"
-echo  !name! - !desc!
+:: Pad id to 12 characters
+set "padded_id=!id!            "
+set "padded_id=!padded_id:~0,12!"
+echo [94m  !padded_id![0m !name! - !desc!
 exit /b 0
 
 :print_error
