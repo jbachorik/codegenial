@@ -22,7 +22,7 @@ Set-Location $ScriptDir
 
 # Test 1: Setup.ps1 exists
 Write-Host "${BLUE}TEST:${NC} Setup.ps1 exists"
-if (-not (Test-Path "$ScriptDir\setup.ps1")) {
+if (-not (Test-Path (Join-Path $ScriptDir "setup.ps1"))) {
     Write-Host "${RED}X FAIL${NC}: setup.ps1 not found"
     $Failed++
 } else {
@@ -33,7 +33,7 @@ Write-Host ""
 
 # Test 2: Tools.conf exists
 Write-Host "${BLUE}TEST:${NC} tools.conf exists"
-if (-not (Test-Path "$ScriptDir\tools.conf")) {
+if (-not (Test-Path (Join-Path $ScriptDir "tools.conf"))) {
     Write-Host "${RED}X FAIL${NC}: tools.conf not found"
     $Failed++
 } else {
@@ -44,13 +44,13 @@ Write-Host ""
 
 # Test 3: Source directory exists
 Write-Host "${BLUE}TEST:${NC} Source directory for claude tool exists"
-if (-not (Test-Path "$ScriptDir\claude")) {
+if (-not (Test-Path (Join-Path $ScriptDir "claude"))) {
     Write-Host "${RED}X FAIL${NC}: claude directory not found"
     $Failed++
-} elseif (-not (Test-Path "$ScriptDir\claude\agents")) {
+} elseif (-not (Test-Path (Join-Path $ScriptDir "claude\agents"))) {
     Write-Host "${RED}X FAIL${NC}: claude\agents directory not found"
     $Failed++
-} elseif (-not (Test-Path "$ScriptDir\claude\commands")) {
+} elseif (-not (Test-Path (Join-Path $ScriptDir "claude\commands"))) {
     Write-Host "${RED}X FAIL${NC}: claude\commands directory not found"
     $Failed++
 } else {
@@ -62,7 +62,7 @@ Write-Host ""
 # Test 4: Setup list command works
 Write-Host "${BLUE}TEST:${NC} setup.ps1 list command works"
 try {
-    $output = & "$ScriptDir\setup.ps1" list 2>&1
+    $output = & (Join-Path $ScriptDir "setup.ps1") list 2>&1
     if ($LASTEXITCODE -ne 0) {
         throw "list command failed with exit code $LASTEXITCODE"
     }
@@ -82,7 +82,7 @@ if (Test-Path $TestDir) {
 New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
 
 try {
-    $output = & "$ScriptDir\setup.ps1" nonexistent "$TestDir" 2>&1
+    $output = & (Join-Path $ScriptDir "setup.ps1") nonexistent "$TestDir" 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "${RED}X FAIL${NC}: should have failed with invalid tool"
         $Failed++
@@ -100,7 +100,7 @@ Write-Host ""
 Write-Host "${BLUE}TEST:${NC} Missing target directory fails gracefully"
 try {
     $randomPath = "C:\nonexistent\path\$([System.Guid]::NewGuid())"
-    $output = & "$ScriptDir\setup.ps1" claude "$randomPath" 2>&1
+    $output = & (Join-Path $ScriptDir "setup.ps1") claude "$randomPath" 2>&1
     if ($LASTEXITCODE -eq 0) {
         Write-Host "${RED}X FAIL${NC}: should have failed with nonexistent directory"
         $Failed++
@@ -125,22 +125,22 @@ New-Item -ItemType Directory -Path $TestDir -Force | Out-Null
 
 # Run installation (automatically answer 'y' if prompted)
 try {
-    $output = "y" | & "$ScriptDir\setup.ps1" claude "$TestDir" 2>&1
+    $output = "y" | & (Join-Path $ScriptDir "setup.ps1") claude "$TestDir" 2>&1
 
     # Check if installation succeeded
-    if (-not (Test-Path "$TestDir\.claude")) {
+    if (-not (Test-Path (Join-Path $TestDir ".claude"))) {
         Write-Host "${RED}X FAIL${NC}: .claude directory was not created"
         $Failed++
-    } elseif (-not (Test-Path "$TestDir\.claude\agents")) {
+    } elseif (-not (Test-Path (Join-Path $TestDir ".claude\agents"))) {
         Write-Host "${RED}X FAIL${NC}: agents directory was not copied"
         $Failed++
-    } elseif (-not (Test-Path "$TestDir\.claude\commands")) {
+    } elseif (-not (Test-Path (Join-Path $TestDir ".claude\commands"))) {
         Write-Host "${RED}X FAIL${NC}: commands directory was not copied"
         $Failed++
-    } elseif (-not (Test-Path "$TestDir\.claude\agents\build-logs-analyst.md")) {
+    } elseif (-not (Test-Path (Join-Path $TestDir ".claude\agents\build-logs-analyst.md"))) {
         Write-Host "${RED}X FAIL${NC}: build-logs-analyst.md was not copied"
         $Failed++
-    } elseif (-not (Test-Path "$TestDir\.claude\commands\build-and-summarize")) {
+    } elseif (-not (Test-Path (Join-Path $TestDir ".claude\commands\build-and-summarize"))) {
         Write-Host "${RED}X FAIL${NC}: build-and-summarize was not copied"
         $Failed++
     } else {
@@ -157,21 +157,21 @@ Write-Host ""
 Write-Host "${BLUE}TEST:${NC} Overwrite prompt works for existing installation"
 
 # Installation already exists from test 7
-if (Test-Path "$TestDir\.claude") {
+if (Test-Path (Join-Path $TestDir ".claude")) {
     # Create a marker file
-    "test" | Out-File -FilePath "$TestDir\.claude\marker.txt"
+    "test" | Out-File -FilePath (Join-Path $TestDir ".claude\marker.txt")
 
     # Try to install again, answer 'n' to overwrite prompt
     try {
-        $output = "n" | & "$ScriptDir\setup.ps1" claude "$TestDir" 2>&1
+        $output = "n" | & (Join-Path $ScriptDir "setup.ps1") claude "$TestDir" 2>&1
 
         # Marker should still exist (we said no)
-        if (Test-Path "$TestDir\.claude\marker.txt") {
+        if (Test-Path (Join-Path $TestDir ".claude\marker.txt")) {
             # Now try with 'y'
-            $output = "y" | & "$ScriptDir\setup.ps1" claude "$TestDir" 2>&1
+            $output = "y" | & (Join-Path $ScriptDir "setup.ps1") claude "$TestDir" 2>&1
 
             # Marker should be gone (we said yes)
-            if (Test-Path "$TestDir\.claude\marker.txt") {
+            if (Test-Path (Join-Path $TestDir ".claude\marker.txt")) {
                 Write-Host "${RED}X FAIL${NC}: old installation should have been removed"
                 $Failed++
             } else {
